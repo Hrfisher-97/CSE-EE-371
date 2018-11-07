@@ -1,4 +1,6 @@
 `timescale 1ps/1ps
+
+// TODO: break up into controlpath & datapath modules
 module binarySearch (L, found, done, index, clk, reset);
 	input logic clk, reset;
 	input logic [7:0] L;
