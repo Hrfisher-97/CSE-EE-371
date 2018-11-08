@@ -1,11 +1,9 @@
 `timescale 1ps/1ps
-
-// TODO: break up into controlpath & datapath modules
 module binarySearch (L, found, done, index, clk, reset);
 	input logic clk, reset;
 	input logic [7:0] L;
 	//input logic [DATA_WIDTH-1:0] A [0:2**ADDR_WIDTH-1];
-	output logic [4:0] index;
+	output logic [5:0] index;
 	output logic found;
 	
 	output logic done;
@@ -22,37 +20,39 @@ module binarySearch (L, found, done, index, clk, reset);
 	
 	logic [4:0] tempIndex;
 	
+	logic [4:0] counter;
+	
 	// need to fix timing issues, see waveform
 	// likely source is q from ram instantiation taking an extra clock cycle to update its value
 	always_ff @(posedge clk) begin
 		if (reset) begin
+			counter <= 5'b01010;
 			high <= 5'b11111;
 			low <= 0;
 			done <= 0;
-			index <= 4'd15; // assumes array size always 32
-			found <= 0;
+			index <= 6'd15; // assumes array size always 32
 		end else if(~done) begin
-			if (L == arrData)
-				found <= 1;
-			if (found | length == 6'd1)
+			if (found | counter == 0)//length == 6'd1)
 				done <= 1;
 			else begin
+				counter <= counter - 1'b1;
 				if (L < arrData) begin
 					high <= index;
-					index <= high - (length >> 1);
 				end else if (L > arrData) begin
 					low <= index + 1;
-					index <= low - 1 + (length >> 1);
 				end
+				index <= (low + high)>>1;
 			end
 		end
 	end
+	
+	assign found = (L == arrData);
 	
 endmodule 
 
 module binarySearch_testbench();
 	logic clk, reset, found, done;
-	logic [4:0] index;
+	logic [5:0] index;
 	logic [7:0] L;
 	
 	parameter CLOCK_PERIOD = 100;
