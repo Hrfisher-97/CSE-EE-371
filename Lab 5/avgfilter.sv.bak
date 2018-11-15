@@ -1,0 +1,32 @@
+module avgfilter(clk, in, out);
+	input logic clk;
+	input logic [23:0] in;
+	output logic [23:0] out;
+	
+	logic [23:0] q0, q1, q2, q3, q4, q5, q6, res0, res1, res2, res3, res4, res5, res6;
+	
+	always_ff @(posedge clk) begin
+		q0 <= in;
+		q1 <= q0;
+		q2 <= q1;
+		q3 <= q2;
+		q4 <= q3;
+		q5 <= q4;
+		q6 <= q5;
+	end
+	
+	assign res0 = (in>>3) + (q0>>3);
+	assign res1 = res0 + (q1>>3);
+	assign res2 = res1 + (q2>>3);
+	assign res3 = res2 + (q3>>3);
+	assign res4 = res3 + (q4>>3);
+	assign res5 = res4 + (q5>>3);
+	
+	assign out = res5 + (q6>>3);
+	
+//	genvar i;
+//	generate
+//		
+//	endgenerate
+
+endmodule
