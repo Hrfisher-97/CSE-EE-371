@@ -3,14 +3,16 @@ module part3 #(parameter logN = 3) (clk, in, reset, read_ready, write_ready, out
 	input logic [23:0] in;
 	output logic [23:0] out;
 	
-	logic signed [23:0] fractioned_in, fifo_out, negative_fifo_out, first_sum, next_sum, accumulator_q;
+	logic signed [23:0] signed_in, fractioned_in, fifo_out, negative_fifo_out, first_sum, next_sum, accumulator_q;
 	 
+	assign signed_in = in;
+	
 	// divide input by N
 	always_comb begin
-		if (in[23])
-			fractioned_in = in >>> logN; // did not work for negative 8
+		if (signed_in[23])
+			fractioned_in = signed_in >>> logN; // did not work for negative 8
 		else
-			fractioned_in = in >> logN;
+			fractioned_in = signed_in >> logN;
 	end
 	
 	// reversed write and read signals because we are "reading" from the microphone and "writing" to the speaker
