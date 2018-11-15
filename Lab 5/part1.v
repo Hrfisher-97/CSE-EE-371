@@ -27,8 +27,11 @@ module part1 (CLOCK_50, CLOCK2_50, KEY, FPGA_I2C_SCLK, FPGA_I2C_SDAT, AUD_XCK,
 	assign read = read_ready;
 	assign write = write_ready;
 	
-	avgfilter avgL (.clk(CLOCK_50), .in(readdata_left), .out(writedata_left));
-	avgfilter avgR (.clk(CLOCK_50), .in(readdata_right), .out(writedata_right));
+	//avgfilter avgL (.clk(CLOCK_50), .in(readdata_left), .read_ready(read_ready), .write_ready(write_ready), .out(writedata_left));
+	//avgfilter avgR (.clk(CLOCK_50), .in(readdata_right), .read_ready(read_ready), .write_ready(write_ready), .out(writedata_right));
+	
+	part3 p3L (.clk(CLOCK_50), .reset(reset), .in(readdata_left), .read_ready(read_ready), .write_ready(write_ready), .out(writedata_left));
+	part3 p3R (.clk(CLOCK_50), .reset(reset), .in(readdata_right), .read_ready(read_ready), .write_ready(write_ready), .out(writedata_right));
 	
 /////////////////////////////////////////////////////////////////////////////////
 // Audio CODEC interface. 
