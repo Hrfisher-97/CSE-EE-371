@@ -1,14 +1,15 @@
-module avgfilter(clk, in, out);
-	input logic clk;
+module avgfilter(clk, in, read_ready, out);
+	input logic clk, read_ready;
 	input logic [23:0] in;
 	output logic [23:0] out;
 	
 	logic signed [23:0] q0, q1, q2, q3, q4, q5, q6, res0, res1, res2, res3, res4, res5, in_signed, in_divided;
 	
-	assign in_signed = in;
+	//assign in_signed = in;
 	
 	always_ff @(posedge clk) begin
-		q0 <= in;
+		if(read_ready)
+			q0 <= in;
 		q1 <= q0;
 		q2 <= q1;
 		q3 <= q2;
@@ -18,7 +19,11 @@ module avgfilter(clk, in, out);
 	end
 	
 	always_comb begin
-		if (in[23])
+		if (read_ready)
+			in_signed = in;
+		else
+			in_signed = 24'b0;
+		if (in_signed[23])
 			in_divided = in_signed>>>3;
 		else
 			in_divided = in_signed>>3;
