@@ -22,7 +22,10 @@ module part3 #(parameter logN = 3) (clk, in, reset, read_ready, write_ready, out
 	assign next_sum = first_sum + accumulator_q;
 	
 	always_ff @(posedge clk) begin
-		accumulator_q <= next_sum;
+		if (reset)
+			accumulator_q <= 0;
+		else
+			accumulator_q <= next_sum;
 	end
 	
 	assign out = next_sum;
