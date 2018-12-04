@@ -9,7 +9,9 @@ module audioLooper #(parameter ADDR_WIDTH = 16) (clk, reset, in, write, read, re
 	logic [23:0] memOut;
 	
 	logic rwSignal;
-	getNewClock newClk (.CLOCK50(clk), .reset, .frequency(24'd10), .newClock(rwClock));
+	// frequency corresponds to how many clock 50 cycles should equate to one newClock cycle
+	// eg frequency = 100 -> newClock is 1/100th of clock 50 frequency
+	getNewClock newClk (.CLOCK50(clk), .reset, .frequency(24'd400), .newClock(rwClock));
 	
 	signalCutter cutter (.in(rwClock), .reset, .clk, .out(rwSignal));
 	
