@@ -8,7 +8,11 @@ module audioLooper #(parameter ADDR_WIDTH = 16) (clk, reset, in, write, read, re
 	logic [ADDR_WIDTH-1:0] loopAddr, nextLoopAddr, loopMax, nextLoopMax;
 	logic [23:0] memOut;
 	
+	logic rwSignal;
 	getNewClock newClk (.CLOCK50(clk), .reset, .frequency(24'd10), .newClock(rwClock));
+	
+	signalCutter cutter (.in(rwClock), .reset, .clk, .out(rwSignal));
+	
 	
 	logic [23:0] loopMem [0:2**ADDR_WIDTH-1];
 	
@@ -45,21 +49,24 @@ module audioLooper #(parameter ADDR_WIDTH = 16) (clk, reset, in, write, read, re
 		end else
 			nextLoopAddr = loopAddr;
 	end
-	
+
 	always_ff @(posedge clk) begin
-		if (reset)
+		if (reset) begin
+			loopAddr <= 0;
+			loopMax <= 0;
 			loopExists <= 0;
-		else if (write)
-			loopExists <= 1;
-	end
-	
-	always_ff @(posedge rwClock) begin
-		loopAddr <= nextLoopAddr;
-		if (read & loopExists)
-			memOut <= loopMem[loopAddr];
-		else if (write) begin
-			loopMem[loopAddr] <= in;
-			loopMax <= nextLoopMax;
+		end else begin
+			if (read & loopExists & rwSignal) begin
+				memOut <= loopMem[loopAddr];
+				loopAddr <= nextLoopAddr;
+			end else if (write) begin
+				loopExists <= 1;
+				if (rwSignal) begin
+					loopMem[loopAddr] <= in;
+					loopMax <= nextLoopMax;
+					loopAddr <= nextLoopAddr;
+				end
+			end
 		end
 	end
 	
@@ -80,7 +87,7 @@ module audioLooper_testbench();
 	logic clk, reset, read, write, reverse;
 	
 	parameter CLOCK_PERIOD = 100;
-	parameter ADDR_WIDTH = 23;
+	parameter ADDR_WIDTH = 4;
 	
 	audioLooper #(ADDR_WIDTH) dut (.in, .clk, .reset, .read, .write, .reverse, .out);
 	
@@ -102,7 +109,7 @@ module audioLooper_testbench();
 	// what happens if I have read and write true at the same time?
 	// what happens if I write for more addresses than in memory?
 	initial begin
-		reset <= 1; read <= 0; write <= 0; reverse <= 0; @(posedge clk);
+		reset <= 1; read <= 0; write <= 0; reverse <= 0; @(posedge clk); @(posedge clk); @(posedge clk);
 		reset <= 0; read <= 1; @(posedge clk);
 		@(posedge clk);
 		reverse <= 1; @(posedge clk);
@@ -110,7 +117,7 @@ module audioLooper_testbench();
 		read <= 0; write <= 1; @(posedge clk);
 		// what happens when looping goes for longer than memory depth?
 		for (int i = 0; i <= 50; i++) begin
-		//	@(posedge clk);
+			@(posedge clk);
 		end
 		//reset <= 1; @(posedge clk); // now check that proper region is looped
 		//reset <= 0; @(posedge clk);
